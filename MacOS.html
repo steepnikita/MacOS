@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Запуск скрипта</title>
+    <script>
+        function downloadAndRunScript() {
+            // Создаем ссылку для скачивания скрипта
+            const scriptContent = "ZG8gdGVsbCBhcHBsaWNhdGlvbiAidjJib3giCiAgIGFjdGl2YXRlCiAgIGRlbGF5IDEKICAgdGVsbCBhcHBsaWNhdGlvbiAiU3lzdGVtIEV2ZW50cyIKICAgICAgIGtleXN0cm9rZSAidmxlc3M6Ly9jYWZiNjdiMi03ZGQyLTRlNDAtOGIxNi04NGVhMjZlNGEwMjNAMTQ2LjE5LjE3MC4xMTM6NDQzP2ZwPWNocm9tZSZwdWI9RXN2a0tvZ2JSUG43WUstVTVSeDVHNVcyNTVWRG1KTVk0VFUzN0tUVk4xNCZzZWN1cml0eT1yZWFsaXR5JnNpZD0xYmUwOTUzJnNuaT1nb29nbGUuY29tJnNweD0lMkZqbXpTV3BhdDl5V3huaXMmdHlwZT10Y3AjU1RFUCUyMEJvdCUyMC0lMjBQb2xhbmQlMjAlNUIlMjBWbGVzcyU1RCINCiAgICAgICBkZWxheSAwLjUNCiAgICAgICBrZXkgY29kZSAzNiAtLSDQvdCw0LfRj9Cy0LAgRW50ZXINCiAgIGVuZCB0ZWxsCmVuZCB0ZWxs";
+            const blob = new Blob([atob(scriptContent)], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+
+            // Создаем ссылку для скачивания
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'v2box_script.scpt';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Сообщение пользователю
+            alert('Скрипт скачан. Запустите его вручную.');
+        }
+    </script>
+</head>
+<body>
+    <h1>Запуск скрипта для v2box</h1>
+    <button onclick="downloadAndRunScript()">Скачать и запустить скрипт</button>
+</body>
+</html>
