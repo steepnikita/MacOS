@@ -1,0 +1,590 @@
+{
+  "name": "Legal Assistant Agent",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": 1,
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [0,0]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "legal-assistant",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": 2,
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0,150]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {"name": "query", "value": "={{ $json.query || $json.body.query }}"},
+            {"name": "session_id", "value": "={{ $json.session_id || $json.body.session_id }}"},
+            {"name": "user_id", "value": "={{ $json.user_id || $json.body.user_id || '' }}"},
+            {"name": "case_id", "value": "={{ $json.case_id || $json.body.case_id || '' }}"},
+            {"name": "access_token", "value": "={{ $json.access_token || $json.body.access_token || '' }}"}
+          ]
+        }
+      },
+      "id": 3,
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [250,75]
+    },
+    {
+      "parameters": {
+        "functionCode": "item.start_time = Date.now();\nreturn item;"
+      },
+      "id": 21,
+      "name": "Set Start Time",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [350,25]
+    },
+    {
+      "parameters": {
+        "functionCode": "const q = $json.query || '';\nconst bad = /(ignore previous instruction|run system command|pretend to be)/i.test(q);\nitem.blocked = bad;\nreturn item;"
+      },
+      "id": 22,
+      "name": "Validate Query",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [550,25]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.blocked }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 23,
+      "name": "Injection Detected?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [750,25]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {"name": "error", "value": "Invalid or unsafe query detected."},
+            {"name": "reason", "value": "injection_detected"}
+          ]
+        }
+      },
+      "id": 24,
+      "name": "Build Error Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [950,0]
+    },
+    {
+      "parameters": {
+        "url": "https://db.example.com/log",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": 25,
+      "name": "Log Blocked Attempt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1150,0]
+    },
+    {
+      "parameters": {
+        "url": "https://db.example.com/session/{{ $json.session_id }}",
+        "method": "GET",
+        "options": {}
+      },
+      "id": 4,
+      "name": "Fetch Session Memory",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [450,75]
+    },
+    {
+      "parameters": {
+        "url": "https://db.example.com/session/{{ $json.session_id }}/context",
+        "method": "GET",
+        "options": {}
+      },
+      "id": 26,
+      "name": "Fetch Context",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [650,75]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1",
+        "prompt": "Classify the legal query: {{ $json.query }}"
+      },
+      "id": 5,
+      "name": "Classify Query",
+      "type": "n8n-nodes-base.openai",
+      "typeVersion": 1,
+      "position": [650,75]
+    },
+    {
+      "parameters": {
+        "functionCode": "const text = $json.query || '';\nconst matches = text.match(/\\w+/g) || [];\nitem.terms = matches.slice(0, 10);\nreturn item;"
+      },
+      "id": 6,
+      "name": "Extract Terms",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [850,75]
+    },
+    {
+      "parameters": {
+        "url": "https://db.example.com/legal/search",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\"query\": \"{{$json.query}}\"}",
+        "options": {}
+      },
+      "id": 7,
+      "name": "Exact Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1050,75]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.data && $json.data.length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": 8,
+      "name": "Exact Match?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1250,75]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {"name": "match_type", "value": "exact"}
+          ]
+        }
+      },
+      "id": 18,
+      "name": "Set Match Type Exact",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [1450,25]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {"name": "match_type", "value": "approximate"}
+          ]
+        }
+      },
+      "id": 19,
+      "name": "Set Match Type Approx",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [1450,125]
+    },
+    {
+      "parameters": {
+        "url": "https://db.example.com/legal/semantic",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\"query\": \"{{$json.query}}\"}",
+        "options": {}
+      },
+      "id": 9,
+      "name": "Semantic Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [1650,150]
+    },
+    {
+      "parameters": {
+        "functionCode": "const docs = $json.data || [];\nitem.sources = docs.map(d => d.title || d.name).filter(Boolean);\nconst ctx = $json.context || [];\nconst ctxText = ctx.map(c => `Q: ${c.q} A: ${c.a}`).join('\\n');\nitem.prompt = `Previous conversation:\n${ctxText}\n---\nCurrent question: ${$json.query}\nAnswer strictly using these legal materials: ${JSON.stringify(docs)}`;\nreturn item;"
+      },
+      "id": 10,
+      "name": "Prepare Prompt",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1850,75]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1",
+        "prompt": "={{ $json.prompt }}"
+      },
+      "id": 11,
+      "name": "Generate Answer",
+      "type": "n8n-nodes-base.openai",
+      "typeVersion": 1,
+      "position": [2050,75]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.classification }}",
+              "operation": "contains",
+              "value2": "template"
+            }
+          ]
+        }
+      },
+      "id": 12,
+      "name": "Need Template?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2250,75]
+    },
+    {
+      "parameters": {
+        "url": "https://docapi.example.com/generate",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\"query\": \"{{$json.query}}\"}",
+        "options": {}
+      },
+      "id": 13,
+      "name": "Generate Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [2450,50]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {"name": "answer", "value": "={{ $json.answer }}"},
+            {"name": "template_link", "value": "={{ $json.download_url || '' }}"},
+            {"name": "classification", "value": "={{ $json.classification }}"},
+            {"name": "match_type", "value": "={{ $json.match_type }}"}
+          ],
+          "json": [
+            {"name": "sources", "value": "={{ $json.sources }}"}
+          ]
+        }
+      },
+      "id": 14,
+      "name": "Build Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [2650,75]
+    },
+    {
+      "parameters": {
+        "functionCode": "const start = $json.start_time || Date.now();\nitem.timestamp = new Date().toISOString();\nitem.log_id = Math.random().toString(36).substring(2,10);\nitem.processing_time_ms = Date.now() - start;\nreturn item;"
+      },
+      "id": 20,
+      "name": "Add Log Details",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [2850,75]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {"name": "feedback_url", "value": "={{ 'https://agent.example.com/feedback?log_id=' + $json.log_id }}"},
+            {"name": "user_feedback", "value": "pending"}
+          ]
+        }
+      },
+      "id": 32,
+      "name": "Attach Feedback Info",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [2950,75]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {"value1": "={{ $json.classification }}", "operation": "contains", "value2": "template"},
+            {"value1": "={{ $json.match_type }}", "operation": "contains", "value2": "approximate"}
+          ]
+        }
+      },
+      "id": 28,
+      "name": "Need Review?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [3050,50]
+    },
+    {
+      "parameters": {
+        "url": "https://tasks.example.com/create",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\"case_id\": \"{{$json.case_id}}\", \"text\": \"Review auto-drafted complaint for Case {{$json.case_id}} — low match confidence.\"}",
+        "options": {}
+      },
+      "id": 29,
+      "name": "Create Review Task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [3250,25]
+    },
+    {
+      "parameters": {
+        "url": "https://storage.example.com/save",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": 30,
+      "name": "Store Response",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [3250,75]
+    },
+    {
+      "parameters": {
+        "url": "https://notify.example.com/final",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": 31,
+      "name": "Send Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [3250,125]
+    },
+    {
+      "parameters": {
+        "url": "https://metrics.example.com/aggregate",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": 33,
+      "name": "Send Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [3050,125]
+    },
+    {
+      "parameters": {
+        "url": "https://db.example.com/log",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": 15,
+      "name": "Log Activity",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [3050,75]
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "responseData": "={{ $json }}",
+        "responseMode": "lastNode"
+      },
+      "id": 16,
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [3250,75]
+    },
+    {
+      "parameters": {
+        "notes": "Workflow analyzes legal questions using private database and returns structured memo."
+      },
+      "id": 17,
+      "name": "Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1800,250]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [ {"node": "Normalize Input", "type": "main", "index": 0} ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [ {"node": "Normalize Input", "type": "main", "index": 1} ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [ {"node": "Set Start Time", "type": "main", "index": 0} ]
+      ]
+    },
+    "Set Start Time": {
+      "main": [
+        [ {"node": "Validate Query", "type": "main", "index": 0} ]
+      ]
+    },
+    "Validate Query": {
+      "main": [
+        [ {"node": "Injection Detected?", "type": "main", "index": 0} ]
+      ]
+    },
+    "Injection Detected?": {
+      "main": [
+        [ {"node": "Build Error Response", "type": "main", "index": 0} ],
+        [ {"node": "Fetch Session Memory", "type": "main", "index": 0} ]
+      ]
+    },
+    "Build Error Response": {
+      "main": [
+        [ {"node": "Log Blocked Attempt", "type": "main", "index": 0} ]
+      ]
+    },
+    "Log Blocked Attempt": {
+      "main": [
+        [ {"node": "Respond", "type": "main", "index": 0} ]
+      ]
+    },
+    "Fetch Session Memory": {
+      "main": [
+        [ {"node": "Fetch Context", "type": "main", "index": 0} ]
+      ]
+    },
+    "Fetch Context": {
+      "main": [
+        [ {"node": "Classify Query", "type": "main", "index": 0} ]
+      ]
+    },
+    "Classify Query": {
+      "main": [
+        [ {"node": "Extract Terms", "type": "main", "index": 0} ]
+      ]
+    },
+    "Extract Terms": {
+      "main": [
+        [ {"node": "Exact Search", "type": "main", "index": 0} ]
+      ]
+    },
+    "Exact Search": {
+      "main": [
+        [ {"node": "Exact Match?", "type": "main", "index": 0} ]
+      ]
+    },
+    "Exact Match?": {
+      "main": [
+        [ {"node": "Set Match Type Exact", "type": "main", "index": 0} ],
+        [ {"node": "Set Match Type Approx", "type": "main", "index": 0} ]
+      ]
+    },
+    "Set Match Type Exact": {
+      "main": [
+        [ {"node": "Prepare Prompt", "type": "main", "index": 0} ]
+      ]
+    },
+    "Set Match Type Approx": {
+      "main": [
+        [ {"node": "Semantic Search", "type": "main", "index": 0} ]
+      ]
+    },
+    "Semantic Search": {
+      "main": [
+        [ {"node": "Prepare Prompt", "type": "main", "index": 0} ]
+      ]
+    },
+    "Prepare Prompt": {
+      "main": [
+        [ {"node": "Generate Answer", "type": "main", "index": 0} ]
+      ]
+    },
+    "Generate Answer": {
+      "main": [
+        [ {"node": "Need Template?", "type": "main", "index": 0} ]
+      ]
+    },
+    "Need Template?": {
+      "main": [
+        [ {"node": "Generate Template", "type": "main", "index": 0} ],
+        [ {"node": "Build Response", "type": "main", "index": 0} ]
+      ]
+    },
+    "Generate Template": {
+      "main": [
+        [ {"node": "Build Response", "type": "main", "index": 0} ]
+      ]
+    },
+    "Build Response": {
+      "main": [
+        [ {"node": "Add Log Details", "type": "main", "index": 0} ]
+      ]
+    },
+    "Add Log Details": {
+      "main": [
+        [ {"node": "Attach Feedback Info", "type": "main", "index": 0} ]
+      ]
+    },
+    "Attach Feedback Info": {
+      "main": [
+        [ {"node": "Need Review?", "type": "main", "index": 0} ]
+      ]
+    },
+    "Need Review?": {
+      "main": [
+        [ {"node": "Create Review Task", "type": "main", "index": 0} ],
+        [ {"node": "Store Response", "type": "main", "index": 0} ]
+      ]
+    },
+    "Create Review Task": {
+      "main": [
+        [ {"node": "Store Response", "type": "main", "index": 0} ]
+      ]
+    },
+    "Store Response": {
+      "main": [
+        [ {"node": "Send Notification", "type": "main", "index": 0} ]
+      ]
+    },
+    "Send Notification": {
+      "main": [
+        [ {"node": "Send Metrics", "type": "main", "index": 0} ]
+      ]
+    },
+    "Send Metrics": {
+      "main": [
+        [ {"node": "Log Activity", "type": "main", "index": 0} ]
+      ]
+    },
+    "Log Activity": {
+      "main": [
+        [ {"node": "Respond", "type": "main", "index": 0} ]
+      ]
+    }
+  }
+}
