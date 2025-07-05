@@ -7,7 +7,10 @@
       "name": "Start",
       "type": "n8n-nodes-base.start",
       "typeVersion": 1,
-      "position": [0,0]
+      "position": [
+        0,
+        0
+      ]
     },
     {
       "parameters": {
@@ -20,17 +23,35 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [0,150]
+      "position": [
+        0,
+        150
+      ]
     },
     {
       "parameters": {
         "values": {
           "string": [
-            {"name": "query", "value": "={{ $json.query || $json.body.query }}"},
-            {"name": "session_id", "value": "={{ $json.session_id || $json.body.session_id }}"},
-            {"name": "user_id", "value": "={{ $json.user_id || $json.body.user_id || '' }}"},
-            {"name": "case_id", "value": "={{ $json.case_id || $json.body.case_id || '' }}"},
-            {"name": "access_token", "value": "={{ $json.access_token || $json.body.access_token || '' }}"}
+            {
+              "name": "query",
+              "value": "={{ $json.query || $json.body.query }}"
+            },
+            {
+              "name": "session_id",
+              "value": "={{ $json.session_id || $json.body.session_id }}"
+            },
+            {
+              "name": "user_id",
+              "value": "={{ $json.user_id || $json.body.user_id || '' }}"
+            },
+            {
+              "name": "case_id",
+              "value": "={{ $json.case_id || $json.body.case_id || '' }}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $json.access_token || $json.body.access_token || '' }}"
+            }
           ]
         }
       },
@@ -38,7 +59,10 @@
       "name": "Normalize Input",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
-      "position": [250,75]
+      "position": [
+        250,
+        75
+      ]
     },
     {
       "parameters": {
@@ -48,7 +72,10 @@
       "name": "Set Start Time",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [350,25]
+      "position": [
+        350,
+        25
+      ]
     },
     {
       "parameters": {
@@ -58,7 +85,10 @@
       "name": "Validate Query",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [550,25]
+      "position": [
+        550,
+        25
+      ]
     },
     {
       "parameters": {
@@ -75,14 +105,23 @@
       "name": "Injection Detected?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [750,25]
+      "position": [
+        750,
+        25
+      ]
     },
     {
       "parameters": {
         "values": {
           "string": [
-            {"name": "error", "value": "Invalid or unsafe query detected."},
-            {"name": "reason", "value": "injection_detected"}
+            {
+              "name": "error",
+              "value": "Invalid or unsafe query detected."
+            },
+            {
+              "name": "reason",
+              "value": "injection_detected"
+            }
           ]
         }
       },
@@ -90,7 +129,10 @@
       "name": "Build Error Response",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
-      "position": [950,0]
+      "position": [
+        950,
+        0
+      ]
     },
     {
       "parameters": {
@@ -98,48 +140,69 @@
         "method": "POST",
         "jsonParameters": true,
         "bodyParametersJson": "{{ JSON.stringify($json) }}",
-        "options": {}
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 25,
       "name": "Log Blocked Attempt",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
-      "position": [1150,0]
+      "position": [
+        1150,
+        0
+      ]
     },
     {
       "parameters": {
         "url": "https://db.example.com/session/{{ $json.session_id }}",
         "method": "GET",
-        "options": {}
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 4,
       "name": "Fetch Session Memory",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
-      "position": [450,75]
+      "position": [
+        450,
+        75
+      ]
     },
     {
       "parameters": {
         "url": "https://db.example.com/session/{{ $json.session_id }}/context",
         "method": "GET",
-        "options": {}
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 26,
       "name": "Fetch Context",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
-      "position": [650,75]
+      "position": [
+        650,
+        75
+      ]
     },
     {
       "parameters": {
         "model": "gpt-4.1",
-        "prompt": "Classify the legal query: {{ $json.query }}"
+        "prompt": "Classify the legal query: {{ $json.query }}",
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 5,
       "name": "Classify Query",
       "type": "n8n-nodes-base.openai",
       "typeVersion": 1,
-      "position": [650,75]
+      "position": [
+        650,
+        75
+      ]
     },
     {
       "parameters": {
@@ -149,7 +212,10 @@
       "name": "Extract Terms",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [850,75]
+      "position": [
+        850,
+        75
+      ]
     },
     {
       "parameters": {
@@ -157,13 +223,18 @@
         "method": "POST",
         "jsonParameters": true,
         "bodyParametersJson": "{\"query\": \"{{$json.query}}\"}",
-        "options": {}
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 7,
       "name": "Exact Search",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
-      "position": [1050,75]
+      "position": [
+        1050,
+        75
+      ]
     },
     {
       "parameters": {
@@ -181,13 +252,19 @@
       "name": "Exact Match?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1250,75]
+      "position": [
+        1250,
+        75
+      ]
     },
     {
       "parameters": {
         "values": {
           "string": [
-            {"name": "match_type", "value": "exact"}
+            {
+              "name": "match_type",
+              "value": "exact"
+            }
           ]
         }
       },
@@ -195,13 +272,19 @@
       "name": "Set Match Type Exact",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
-      "position": [1450,25]
+      "position": [
+        1450,
+        25
+      ]
     },
     {
       "parameters": {
         "values": {
           "string": [
-            {"name": "match_type", "value": "approximate"}
+            {
+              "name": "match_type",
+              "value": "approximate"
+            }
           ]
         }
       },
@@ -209,7 +292,10 @@
       "name": "Set Match Type Approx",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
-      "position": [1450,125]
+      "position": [
+        1450,
+        125
+      ]
     },
     {
       "parameters": {
@@ -217,13 +303,18 @@
         "method": "POST",
         "jsonParameters": true,
         "bodyParametersJson": "{\"query\": \"{{$json.query}}\"}",
-        "options": {}
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 9,
       "name": "Semantic Search",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
-      "position": [1650,150]
+      "position": [
+        1650,
+        150
+      ]
     },
     {
       "parameters": {
@@ -233,18 +324,27 @@
       "name": "Prepare Prompt",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [1850,75]
+      "position": [
+        1850,
+        75
+      ]
     },
     {
       "parameters": {
         "model": "gpt-4.1",
-        "prompt": "={{ $json.prompt }}"
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 11,
       "name": "Generate Answer",
       "type": "n8n-nodes-base.openai",
       "typeVersion": 1,
-      "position": [2050,75]
+      "position": [
+        2050,
+        75
+      ]
     },
     {
       "parameters": {
@@ -262,7 +362,10 @@
       "name": "Need Template?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [2250,75]
+      "position": [
+        2250,
+        75
+      ]
     },
     {
       "parameters": {
@@ -270,25 +373,45 @@
         "method": "POST",
         "jsonParameters": true,
         "bodyParametersJson": "{\"query\": \"{{$json.query}}\"}",
-        "options": {}
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 13,
       "name": "Generate Template",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
-      "position": [2450,50]
+      "position": [
+        2450,
+        50
+      ]
     },
     {
       "parameters": {
         "values": {
           "string": [
-            {"name": "answer", "value": "={{ $json.answer }}"},
-            {"name": "template_link", "value": "={{ $json.download_url || '' }}"},
-            {"name": "classification", "value": "={{ $json.classification }}"},
-            {"name": "match_type", "value": "={{ $json.match_type }}"}
+            {
+              "name": "answer",
+              "value": "={{ $json.answer }}"
+            },
+            {
+              "name": "template_link",
+              "value": "={{ $json.download_url || '' }}"
+            },
+            {
+              "name": "classification",
+              "value": "={{ $json.classification }}"
+            },
+            {
+              "name": "match_type",
+              "value": "={{ $json.match_type }}"
+            }
           ],
           "json": [
-            {"name": "sources", "value": "={{ $json.sources }}"}
+            {
+              "name": "sources",
+              "value": "={{ $json.sources }}"
+            }
           ]
         }
       },
@@ -296,7 +419,10 @@
       "name": "Build Response",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
-      "position": [2650,75]
+      "position": [
+        2650,
+        75
+      ]
     },
     {
       "parameters": {
@@ -306,14 +432,23 @@
       "name": "Add Log Details",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [2850,75]
+      "position": [
+        2850,
+        75
+      ]
     },
     {
       "parameters": {
         "values": {
           "string": [
-            {"name": "feedback_url", "value": "={{ 'https://agent.example.com/feedback?log_id=' + $json.log_id }}"},
-            {"name": "user_feedback", "value": "pending"}
+            {
+              "name": "feedback_url",
+              "value": "={{ 'https://agent.example.com/feedback?log_id=' + $json.log_id }}"
+            },
+            {
+              "name": "user_feedback",
+              "value": "pending"
+            }
           ]
         }
       },
@@ -321,14 +456,25 @@
       "name": "Attach Feedback Info",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
-      "position": [2950,75]
+      "position": [
+        2950,
+        75
+      ]
     },
     {
       "parameters": {
         "conditions": {
           "string": [
-            {"value1": "={{ $json.classification }}", "operation": "contains", "value2": "template"},
-            {"value1": "={{ $json.match_type }}", "operation": "contains", "value2": "approximate"}
+            {
+              "value1": "={{ $json.classification }}",
+              "operation": "contains",
+              "value2": "template"
+            },
+            {
+              "value1": "={{ $json.match_type }}",
+              "operation": "contains",
+              "value2": "approximate"
+            }
           ]
         }
       },
@@ -336,21 +482,29 @@
       "name": "Need Review?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [3050,50]
+      "position": [
+        3050,
+        50
+      ]
     },
     {
       "parameters": {
         "url": "https://tasks.example.com/create",
         "method": "POST",
         "jsonParameters": true,
-        "bodyParametersJson": "{\"case_id\": \"{{$json.case_id}}\", \"text\": \"Review auto-drafted complaint for Case {{$json.case_id}} — low match confidence.\"}",
-        "options": {}
+        "bodyParametersJson": "{\"case_id\": \"{{$json.case_id}}\", \"text\": \"Review auto-drafted complaint for Case {{$json.case_id}} \u2014 low match confidence.\"}",
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 29,
       "name": "Create Review Task",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
-      "position": [3250,25]
+      "position": [
+        3250,
+        25
+      ]
     },
     {
       "parameters": {
@@ -358,13 +512,18 @@
         "method": "POST",
         "jsonParameters": true,
         "bodyParametersJson": "{{ JSON.stringify($json) }}",
-        "options": {}
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 30,
       "name": "Store Response",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
-      "position": [3250,75]
+      "position": [
+        3250,
+        75
+      ]
     },
     {
       "parameters": {
@@ -372,13 +531,18 @@
         "method": "POST",
         "jsonParameters": true,
         "bodyParametersJson": "{{ JSON.stringify($json) }}",
-        "options": {}
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 31,
       "name": "Send Notification",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
-      "position": [3250,125]
+      "position": [
+        3250,
+        125
+      ]
     },
     {
       "parameters": {
@@ -386,13 +550,18 @@
         "method": "POST",
         "jsonParameters": true,
         "bodyParametersJson": "{{ JSON.stringify($json) }}",
-        "options": {}
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 33,
       "name": "Send Metrics",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
-      "position": [3050,125]
+      "position": [
+        3050,
+        125
+      ]
     },
     {
       "parameters": {
@@ -400,13 +569,18 @@
         "method": "POST",
         "jsonParameters": true,
         "bodyParametersJson": "{{ JSON.stringify($json) }}",
-        "options": {}
+        "options": {
+          "continueOnFail": true
+        }
       },
       "id": 15,
       "name": "Log Activity",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
-      "position": [3050,75]
+      "position": [
+        3050,
+        75
+      ]
     },
     {
       "parameters": {
@@ -418,7 +592,10 @@
       "name": "Respond",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [3250,75]
+      "position": [
+        3250,
+        75
+      ]
     },
     {
       "parameters": {
@@ -428,162 +605,932 @@
       "name": "Documentation",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [1800,250]
+      "position": [
+        1800,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://logging.example.com/error",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": 34,
+      "name": "Log Error",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2550,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://notify.example.com/error",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": 35,
+      "name": "Notify Error",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        2750,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "notes": "Errors are logged and users notified before response"
+      },
+      "id": 36,
+      "name": "Error Handling Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2650,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 37,
+      "name": "Fetch Session Memory Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        550,
+        125
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 38,
+      "name": "Fetch Context Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        750,
+        125
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 39,
+      "name": "Classify Query Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        750,
+        125
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 40,
+      "name": "Exact Search Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1150,
+        125
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 41,
+      "name": "Semantic Search Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1750,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 42,
+      "name": "Generate Answer Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2150,
+        125
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 43,
+      "name": "Generate Template Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2550,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 44,
+      "name": "Create Review Task Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3350,
+        75
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 45,
+      "name": "Store Response Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3350,
+        125
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 46,
+      "name": "Send Notification Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3350,
+        175
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 47,
+      "name": "Send Metrics Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3150,
+        175
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 48,
+      "name": "Log Activity Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3150,
+        125
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error !== undefined }}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": 49,
+      "name": "Log Blocked Attempt Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1250,
+        50
+      ]
     }
   ],
   "connections": {
     "Start": {
       "main": [
-        [ {"node": "Normalize Input", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Webhook": {
       "main": [
-        [ {"node": "Normalize Input", "type": "main", "index": 1} ]
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 1
+          }
+        ]
       ]
     },
     "Normalize Input": {
       "main": [
-        [ {"node": "Set Start Time", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Set Start Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Set Start Time": {
       "main": [
-        [ {"node": "Validate Query", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Validate Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Validate Query": {
       "main": [
-        [ {"node": "Injection Detected?", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Injection Detected?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Injection Detected?": {
       "main": [
-        [ {"node": "Build Error Response", "type": "main", "index": 0} ],
-        [ {"node": "Fetch Session Memory", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Build Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Session Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Build Error Response": {
       "main": [
-        [ {"node": "Log Blocked Attempt", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Log Blocked Attempt",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Log Blocked Attempt": {
       "main": [
-        [ {"node": "Respond", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Log Blocked Attempt Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Fetch Session Memory": {
       "main": [
-        [ {"node": "Fetch Context", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Fetch Session Memory Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Fetch Context": {
       "main": [
-        [ {"node": "Classify Query", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Fetch Context Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Classify Query": {
       "main": [
-        [ {"node": "Extract Terms", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Classify Query Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Extract Terms": {
       "main": [
-        [ {"node": "Exact Search", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Exact Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Exact Search": {
       "main": [
-        [ {"node": "Exact Match?", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Exact Search Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Exact Match?": {
       "main": [
-        [ {"node": "Set Match Type Exact", "type": "main", "index": 0} ],
-        [ {"node": "Set Match Type Approx", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Set Match Type Exact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Match Type Approx",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Set Match Type Exact": {
       "main": [
-        [ {"node": "Prepare Prompt", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Prepare Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Set Match Type Approx": {
       "main": [
-        [ {"node": "Semantic Search", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Semantic Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Semantic Search": {
       "main": [
-        [ {"node": "Prepare Prompt", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Semantic Search Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Prepare Prompt": {
       "main": [
-        [ {"node": "Generate Answer", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Generate Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Generate Answer": {
       "main": [
-        [ {"node": "Need Template?", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Generate Answer Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Need Template?": {
       "main": [
-        [ {"node": "Generate Template", "type": "main", "index": 0} ],
-        [ {"node": "Build Response", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Generate Template",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Generate Template": {
       "main": [
-        [ {"node": "Build Response", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Generate Template Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Build Response": {
       "main": [
-        [ {"node": "Add Log Details", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Add Log Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Add Log Details": {
       "main": [
-        [ {"node": "Attach Feedback Info", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Attach Feedback Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Attach Feedback Info": {
       "main": [
-        [ {"node": "Need Review?", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Need Review?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Need Review?": {
       "main": [
-        [ {"node": "Create Review Task", "type": "main", "index": 0} ],
-        [ {"node": "Store Response", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Create Review Task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Create Review Task": {
       "main": [
-        [ {"node": "Store Response", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Create Review Task Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Store Response": {
       "main": [
-        [ {"node": "Send Notification", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Store Response Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Send Notification": {
       "main": [
-        [ {"node": "Send Metrics", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Send Notification Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Send Metrics": {
       "main": [
-        [ {"node": "Log Activity", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Send Metrics Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Log Activity": {
       "main": [
-        [ {"node": "Respond", "type": "main", "index": 0} ]
+        [
+          {
+            "node": "Log Activity Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Error": {
+      "main": [
+        [
+          {
+            "node": "Notify Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Error": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Session Memory Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Context Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Query Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Terms",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exact Search Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Exact Match?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Semantic Search Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Answer Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Need Template?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Template Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Review Task Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Response Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Notification Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Metrics Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Activity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Activity Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Blocked Attempt Error?": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   }
