@@ -197,7 +197,7 @@
       },
       "id": 5,
       "name": "Classify Query",
-      "type": "n8n-nodes-base.openai",
+      "type": "n8n-nodes-base.openAi",
       "typeVersion": 1,
       "position": [
         650,
@@ -339,7 +339,7 @@
       },
       "id": 11,
       "name": "Generate Answer",
-      "type": "n8n-nodes-base.openai",
+      "type": "n8n-nodes-base.openAi",
       "typeVersion": 1,
       "position": [
         2050,
@@ -599,7 +599,7 @@
     },
     {
       "parameters": {
-        "notes": "Workflow analyzes legal questions using private database and returns structured memo."
+        "content": "Workflow analyzes legal questions using private database and returns structured memo."
       },
       "id": 17,
       "name": "Documentation",
@@ -646,7 +646,7 @@
     },
     {
       "parameters": {
-        "notes": "Errors are logged and users notified before response"
+        "content": "Errors are logged and users notified before response"
       },
       "id": 36,
       "name": "Error Handling Note",
